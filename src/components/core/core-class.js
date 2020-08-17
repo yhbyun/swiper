@@ -446,8 +446,6 @@ class Swiper extends SwiperClass {
           ].join(' '))
           .removeAttr('style')
           .removeAttr('data-swiper-slide-index')
-          .removeAttr('data-swiper-column')
-          .removeAttr('data-swiper-row');
       }
     }
 

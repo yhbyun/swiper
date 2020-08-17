@@ -73,45 +73,48 @@ export default function () {
       let newSlideOrderIndex;
       let column;
       let row;
-      if (
-        (params.slidesPerColumnFill === 'column')
-        || (params.slidesPerColumnFill === 'row' && params.slidesPerGroup > 1)
-      ) {
-        if (params.slidesPerColumnFill === 'column') {
-          column = Math.floor(i / slidesPerColumn);
-          row = i - (column * slidesPerColumn);
-          if (column > numFullColumns || (column === numFullColumns && row === slidesPerColumn - 1)) {
-            row += 1;
-            if (row >= slidesPerColumn) {
-              row = 0;
-              column += 1;
-            }
+      if (params.slidesPerColumnFill === 'row' && params.slidesPerGroup > 1) {
+        const groupIndex = Math.floor(i / (params.slidesPerGroup * params.slidesPerColumn));
+        const slideIndexInGroup = i - params.slidesPerColumn * params.slidesPerGroup * groupIndex;
+        const columnsInGroup =
+          groupIndex === 0
+            ? params.slidesPerGroup
+            : Math.min(
+                Math.ceil(
+                  (slidesLength - groupIndex * slidesPerColumn * params.slidesPerGroup) /
+                    slidesPerColumn,
+                ),
+                params.slidesPerGroup,
+              );
+        row = Math.floor(slideIndexInGroup / columnsInGroup);
+        column = slideIndexInGroup - row * columnsInGroup + groupIndex * params.slidesPerGroup;
+
+        newSlideOrderIndex = column + (row * slidesNumberEvenToRows) / slidesPerColumn;
+        slide.css({
+          '-webkit-box-ordinal-group': newSlideOrderIndex,
+          '-moz-box-ordinal-group': newSlideOrderIndex,
+          '-ms-flex-order': newSlideOrderIndex,
+          '-webkit-order': newSlideOrderIndex,
+          order: newSlideOrderIndex,
+        });
+      } else if (params.slidesPerColumnFill === 'column') {
+        column = Math.floor(i / slidesPerColumn);
+        row = i - column * slidesPerColumn;
+        if (column > numFullColumns || (column === numFullColumns && row === slidesPerColumn - 1)) {
+          row += 1;
+          if (row >= slidesPerColumn) {
+            row = 0;
+            column += 1;
           }
-        } else {
-          const groupIndex = Math.floor(i / params.slidesPerGroup);
-          row = Math.floor(i / params.slidesPerView) - groupIndex * params.slidesPerColumn;
-          column = i - row * params.slidesPerView - groupIndex * params.slidesPerView;
         }
-        newSlideOrderIndex = column + ((row * slidesNumberEvenToRows) / slidesPerColumn);
-        slide
-          .css({
-            '-webkit-box-ordinal-group': newSlideOrderIndex,
-            '-moz-box-ordinal-group': newSlideOrderIndex,
-            '-ms-flex-order': newSlideOrderIndex,
-            '-webkit-order': newSlideOrderIndex,
-            order: newSlideOrderIndex,
-          });
       } else {
         row = Math.floor(i / slidesPerRow);
-        column = i - (row * slidesPerRow);
+        column = i - row * slidesPerRow;
       }
-      slide
-        .css(
-          `margin-${swiper.isHorizontal() ? 'top' : 'left'}`,
-          (row !== 0 && params.spaceBetween) && (`${params.spaceBetween}px`)
-        )
-        .attr('data-swiper-column', column)
-        .attr('data-swiper-row', row);
+      slide.css(
+        `margin-${swiper.isHorizontal() ? 'top' : 'left'}`,
+        row !== 0 && params.spaceBetween && `${params.spaceBetween}px`,
+      );
     }
     if (slide.css('display') === 'none') continue; // eslint-disable-line
 
